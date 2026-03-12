@@ -19,7 +19,7 @@ RUN npm install --production
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
-COPY --from=build /app/uploads ./uploads
+RUN mkdir -p uploads
 
 EXPOSE 3001
 
