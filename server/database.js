@@ -1,6 +1,7 @@
 import sqlite3 from 'sqlite3';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../database.sqlite');
@@ -47,15 +48,20 @@ db.serialize(() => {
     }
   });
 
-  // Calculations/Sepet table
-  db.run(`CREATE TABLE IF NOT EXISTS calculations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    customer_id INTEGER,
-    data TEXT,
-    total_amount REAL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers (id)
-  )`);
+      FOREIGN KEY(customer_id) REFERENCES customers(id)
+    )`);
+
+    // Default User Seeding
+    db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
+      if (row?.count === 0) {
+        bcrypt.hash('123', 10, (err, hash) => {
+          db.run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin'], (err) => {
+            if (!err) console.log('Admin user seeded.');
+          });
+        });
+      }
+    });
+  });
 });
 
 export default db;
