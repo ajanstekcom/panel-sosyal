@@ -21,9 +21,22 @@ db.serialize(() => {
     username TEXT UNIQUE,
     password TEXT,
     role TEXT DEFAULT 'user'
-  )`);
+  )`, (err) => {
+    if (!err) {
+      // Default User Seeding
+      db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
+        if (row?.count === 0) {
+          bcrypt.hash('123', 10, (err, hash) => {
+            db.run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin'], (err) => {
+              if (!err) console.log('Admin user seeded.');
+            });
+          });
+        }
+      });
+    }
+  });
 
-  // Customers table - Updated with TC, Phone, Photo
+  // Customers table
   db.run(`CREATE TABLE IF NOT EXISTS customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
@@ -48,20 +61,15 @@ db.serialize(() => {
     }
   });
 
-      FOREIGN KEY(customer_id) REFERENCES customers(id)
-    )`);
-
-    // Default User Seeding
-    db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
-      if (row?.count === 0) {
-        bcrypt.hash('123', 10, (err, hash) => {
-          db.run('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', ['admin', hash, 'admin'], (err) => {
-            if (!err) console.log('Admin user seeded.');
-          });
-        });
-      }
-    });
-  });
+  // Calculations/Sepet table
+  db.run(`CREATE TABLE IF NOT EXISTS calculations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER,
+    data TEXT,
+    total_amount REAL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES customers (id)
+  )`);
 });
 
 export default db;
