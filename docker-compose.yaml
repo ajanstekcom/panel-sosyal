@@ -6,10 +6,15 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./database.sqlite:/app/database.sqlite
-      - ./uploads:/app/uploads
+      - panel_data:/app/data
+      - panel_uploads:/app/uploads
     environment:
-      - PORT=3001
+      - PORT=${PORT:-3001}
       - NODE_ENV=production
       - JWT_SECRET=${JWT_SECRET}
+      - DB_PATH=/app/data/database.sqlite
     restart: always
+
+volumes:
+  panel_data:
+  panel_uploads:

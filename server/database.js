@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.resolve(__dirname, '../database.sqlite');
+const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../database.sqlite');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
